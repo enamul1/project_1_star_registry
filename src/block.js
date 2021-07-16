@@ -35,15 +35,33 @@ class Block {
      *  5. Resolve true or false depending if it is valid or not.
      *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
      */
+    // validate() {
+    //     let self = this;
+    //     return new Promise((resolve, reject) => {
+    //         // Save in auxiliary variable the current block hash
+                                            
+    //         // Recalculate the hash of the Block
+    //         // Comparing if the hashes changed
+    //         // Returning the Block is not valid
+            
+    //         // Returning the Block is valid
+
+    //     });
+    // }
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
             // Save in auxiliary variable the current block hash
-                                            
+            let calculatedHash = SHA256(JSON.stringify(self)).toString();
+            if(self.hash===calculatedHash) {
+                resolve(true);
+            }
+            resolve(false);
+
             // Recalculate the hash of the Block
             // Comparing if the hashes changed
             // Returning the Block is not valid
-            
+
             // Returning the Block is valid
 
         });
@@ -59,11 +77,16 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
-        // Getting the encoded data saved in the Block
-        // Decoding the data to retrieve the JSON representation of the object
-        // Parse the data to an object to be retrieve.
-
-        // Resolve with the data if the object isn't the Genesis block
+        let self = this;
+        return new Promise((resolve, reject) => {
+            let dataEncoded = this.body;            
+            let dataJson = hex2ascii(dataEncoded);   
+            let data = JSON.parse(dataJson);         
+            if( data && self.height > 0){
+                resolve(data);                   
+            }
+            resolve([]);     
+        });
 
     }
 
