@@ -65,22 +65,25 @@ class Blockchain {
         let self = this;
         return new Promise(async (resolve, reject) => {
             try {
-                self.getChainHeight().then(result => {
+                self.getChainHeight().then(async result => {
+                    let errorLog = await self.validateChain();
+                    if(errorLog.length) {
+                        reject(new Error('error!')) 
+                    }
                     self.height = result;
                     block.height = parseInt(self.height) + 1;
                     // UTC timestamp
-                    block.timeStamp = new Date().getTime().toString().slice(0, -3);
-                    if (this.chain.length > 0) {
+                    block.time = new Date().getTime().toString().slice(0, -3);
+                    if (self.chain.length > 0) {
                         // previous block hash
-                        this.getBlockByHeight(self.height).then(result => {
-                            block.previousBlockHash = result.hash
-                        });
+                        let result = await this.getBlockByHeight(self.height);
+                        block.previousBlockHash = result.hash
                     }
                     // SHA256 requires a string of data
                     block.hash = SHA256(JSON.stringify(block)).toString();
                     // add block to chain
                     self.chain.push(block);
-                    self.height = block.height
+                    self.height = block.height;
                     resolve(block)
                 });
             } catch {
@@ -212,7 +215,7 @@ class Blockchain {
             for (let i = 0; i < this.chain.length; i++) {
                 //take the current block
                 const currentBlock = this.chain[i];
-                if ( !(await currentBlock.validate()) ) {
+                if (!(await currentBlock.validate()) ) {
                     errorLog.push({
                         error: 'Failed validation',
                         block: currentBlock
